@@ -1,18 +1,18 @@
-'use strict';
+"use strict";
 
-const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const EmberApp = require("ember-cli/lib/broccoli/ember-app");
 
 module.exports = function (defaults) {
   const app = new EmberApp(defaults, {
     // Add options here
-    'ember-cli-babel': {
+    "ember-cli-babel": {
       enableTypeScriptTransform: true,
     },
   });
 
-  const { Webpack } = require('@embroider/webpack');
+  const { Webpack } = require("@embroider/webpack");
 
-  return require('@embroider/compat').compatBuild(app, Webpack, {
+  return require("@embroider/compat").compatBuild(app, Webpack, {
     extraPublicTrees: [],
     staticAddonTrees: true,
     staticAddonTestSupportTrees: true,
@@ -26,8 +26,26 @@ module.exports = function (defaults) {
       es: [],
     },
     // splitAtRoutes: ['route.name'], // can also be a RegExp
-    // packagerOptions: {
-    //    webpackConfig: { }
-    // }
+    packagerOptions: {
+      webpackConfig: {
+        module: {
+          rules: [
+            {
+              test: /\.css$/i,
+              use: [
+                {
+                  loader: "postcss-loader",
+                  options: {
+                    postcssOptions: {
+                      config: "postcss.config.js",
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
   });
 };
