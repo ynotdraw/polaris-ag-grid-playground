@@ -1,26 +1,4 @@
-[Try it on StackBlitz](https://stackblitz.com/github/nullVoxPopuli/polaris-starter/tree/main?file=README.md)
-
-Variants:
-
-- [Vite](https://github.com/NullVoxPopuli/polaris-starter/tree/main)
-- [Webpack](https://github.com/NullVoxPopuli/polaris-starter/tree/webpack) 👈 This branch
-
-# polaris-starter
-
-Variants:
-- [Vite](https://github.com/NullVoxPopuli/polaris-starter/tree/main) 
-- [Webpack](https://github.com/NullVoxPopuli/polaris-starter/tree/webpack) 👈 This branch  
-
-
-The goal of this project is to be a quick way to get started with _Polaris_, the next edition of Ember.
-
-Leading up to an _Edition_, the pit of incoherence can be quite deep, as there are lots of moving parts leading up to the solidification of what is in an Edition.
-
-This project is your one-stop-shop for features and patterns expected to be a part of of _Polaris_.
-
-The demo app contained in this repo is deployed here: https://polaris-starter.pages.dev/
-
-Below, you'll find the default README content for new ember projects.
+# polaris-ag-grid-playground
 
 ---
 
@@ -39,7 +17,7 @@ You will need the following things properly installed on your computer.
 ## Installation
 
 - `git clone <repository-url>` this repository
-- `cd polaris-starter`
+- `cd polaris-ag-grid-playground`
 - `pnpm install`
 
 ## Running / Development
