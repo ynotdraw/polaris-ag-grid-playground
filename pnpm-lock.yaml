@@ -71,7 +71,7 @@ devDependencies:
     specifier: ^1.0.2
     version: 1.1.0
   '@nullvoxpopuli/eslint-configs':
-    specifier: ^3.2.0
+    specifier: ^3.2.2
     version: 3.2.2(@babel/core@7.22.15)(@babel/eslint-parser@7.22.15)(@typescript-eslint/eslint-plugin@6.6.0)(@typescript-eslint/parser@6.6.0)(eslint-config-prettier@9.0.0)(eslint-plugin-ember@11.11.1)(eslint-plugin-qunit@8.0.0)(eslint@8.48.0)(prettier@3.0.3)(typescript@5.2.2)
   '@tsconfig/ember':
     specifier: ^3.0.0

@@ -2,9 +2,9 @@ import "@glint/environment-ember-loose";
 import "@glint/environment-ember-loose/native-integration";
 
 import type { HelperLike } from "@glint/template";
+import type Table from "polaris-starter/components/table";
 // import type { ComponentLike, HelperLike, ModifierLike } from "@glint/template";
 import type Welcome from "polaris-starter/components/welcome";
-import type Table from "polaris-starter/components/table";
 
 declare module "@glint/environment-ember-loose/registry" {
   export default interface Registry {

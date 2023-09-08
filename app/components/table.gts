@@ -1,5 +1,15 @@
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+import Component from '@glimmer/component';
+
 import {
-  Grid,
+  Grid
+} from 'ag-grid-enterprise';
+import { modifier } from 'ember-modifier';
+import productsFromJson from 'polaris-starter/products-data.json';
+
+import type {
   GridOptions,
   ICellRendererComp,
   ICellRendererParams,
@@ -7,13 +17,6 @@ import {
   ITooltipComp,
   ITooltipParams
 } from 'ag-grid-enterprise';
-import { modifier } from 'ember-modifier';
-import Component from '@glimmer/component';
-
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-
-import productsFromJson from 'polaris-starter/products-data.json';
 
 /**
  * Renders a "Buy now" button in  the last column. This is mostly testing how easy it is to
@@ -22,7 +25,9 @@ import productsFromJson from 'polaris-starter/products-data.json';
  */
 class BuyNowCell implements ICellRendererComp {
   eGui!: HTMLButtonElement;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   eValue: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cellValue: any;
   eventListener!: () => void;
 
