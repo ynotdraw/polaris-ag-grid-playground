@@ -1,9 +1,9 @@
-import { cell, resource } from 'ember-resources';
+import { cell, resource } from "ember-resources";
 
-const usDateTime = new Intl.DateTimeFormat('en-US', {
-  hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric',
+const usDateTime = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
   hour12: false,
 });
 
