@@ -3,7 +3,9 @@ import {
   GridOptions,
   ICellRendererComp,
   ICellRendererParams,
-  IServerSideGetRowsParams
+  IServerSideGetRowsParams,
+  ITooltipComp,
+  ITooltipParams
 } from 'ag-grid-enterprise';
 import { modifier } from 'ember-modifier';
 import Component from '@glimmer/component';
@@ -92,6 +94,20 @@ class BuyNowCell implements ICellRendererComp {
   }
 }
 
+class DescriptionTooltip implements ITooltipComp {
+  eGui!: HTMLDivElement;
+
+  init(params: ITooltipParams) {
+    this.eGui = document.createElement('div');
+    this.eGui.className = 'bg-slate-600 text-white rounded-md p-2';
+    this.eGui.innerHTML = `${params.data?.description}`;
+  }
+
+  getGui() {
+    return this.eGui;
+  }
+}
+
 /**
  * Custom sort function.  Normally the backend would do this for us,
  * but we'll simulate that here.
@@ -141,6 +157,8 @@ export default class Table extends Component<TableSignature> {
           {
             field: "description",
             resizable: true,
+            tooltipField: 'description',
+            tooltipComponent: DescriptionTooltip
           },
           { field: "price", sortable: true },
           { field: "discountPercentage" },
