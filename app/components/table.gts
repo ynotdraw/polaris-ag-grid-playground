@@ -187,28 +187,27 @@ export default class Table extends Component<{}> {
             const sortDirection = params?.request?.sortModel?.[0]?.sort;
             const sortColumn = params?.request?.sortModel?.[0]?.colId;
 
-            // Uncomment this back out when ready to re-add data fetching!
-            // const response = await fetch("https://dummyjson.com/products");
+            // NOTE: This could stop working at any moment, so we shouldn't be
+            //       **too** reliant on it.  Check out `products-data.json`
+            //       if this stops working.
+            //       Could also use https://www.ag-grid.com/example-assets/small-olympic-winners.json instead
+            const response = await fetch("https://dummyjson.com/products");
 
-            // if (!response.ok) {
-            //   console.error('The API request failed.')
-            //   return;
-            // }
-
-            // const results: ProductsResponse = await response.json();
-
-            // params.success({ rowData: results.products });
+            const results: ProductsResponse = response.ok
+              ? await response.json()
+              : productsFromJson;
 
             // Add an artifical sleep to simulate the backend doing any sorting
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise((r) => setTimeout(r, 500));
 
-            const sorted = sortDirection && sortColumn
-              ? sortProducts({
-                  products: productsFromJson.products,
-                  key: (sortColumn as keyof Product),
-                  direction: sortDirection
-                })
-              : productsFromJson.products;
+            const sorted =
+              sortDirection && sortColumn
+                ? sortProducts({
+                    products: results.products,
+                    key: sortColumn as keyof Product,
+                    direction: sortDirection,
+                  })
+                : results.products;
 
             params.success({ rowData: sorted });
           }
