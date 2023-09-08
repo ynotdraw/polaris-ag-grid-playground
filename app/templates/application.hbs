@@ -1,5 +1,82 @@
 {{page-title "PolarisStarter"}}
 
-<Welcome />
+<header class="bg-white">
+  <nav
+    aria-label="Global"
+    class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
+  >
+    <div class="flex lg:flex-1">
+      <a href="#" class="-m-1.5 p-1.5">
+        <svg
+          class="h-8 w-auto text-blue-600"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          data-icon="SvgHome"
+          aria-hidden="true"
+        >
+          <path
+            d="M4.75 10.75v9a1.16 1.16 0 00.213.725.717.717 0 00.587.275h12.4a.737.737 0 00.55-.275 1.1 1.1 0 00.25-.725v-9m-16 2l4.5-5 4.5-5 4.5 5 4.5 5m-11.5 8v-5a.945.945 0 011-1h3a.945.945 0 011 1v5"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+          ></path>
+        </svg>
+      </a>
+    </div>
 
-{{outlet}}
+    <div class="flex lg:hidden">
+      <button
+        type="button"
+        class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+      >
+        <span class="sr-only">Open the main menu</span>
+        <svg
+          class="h-6 w-6"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          data-icon="SvgMenu"
+          aria-hidden="true"
+        >
+          <path
+            d="M3 12h18M3 6h18M3 18h18"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <ul class="hidden lg:flex lg:gap-x-12">
+      {{#each this.navigationOptions as |item|}}
+        <li>
+          <a
+            href={{item.href}}
+            class="text-sm font-semibold leading-6 text-gray-900"
+          >
+            {{item.name}}
+          </a>
+        </li>
+      {{/each}}
+    </ul>
+
+    <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">
+        Log in
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main class="flex min-h-screen flex-col p-6 bg-slate-200 lg:px-8">
+  {{outlet}}
+</main>
