@@ -29,6 +29,7 @@ class BuyNowCell implements ICellRendererComp {
   // gets called once before the renderer is used
   init(params: ICellRendererParams) {
     this.eGui = document.createElement('button');
+    this.eGui.setAttribute('type', 'button');
     this.eGui.className = 'rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 flex items-center gap-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600';
 
     this.eGui.innerHTML = `
@@ -94,6 +95,10 @@ class BuyNowCell implements ICellRendererComp {
   }
 }
 
+/**
+ * Renders a custom tooltip for the Description column. I wanted to see how easy it was
+ * to render custom tooltip components.
+ */
 class DescriptionTooltip implements ITooltipComp {
   eGui!: HTMLDivElement;
 
@@ -142,9 +147,7 @@ interface ProductsResponse {
   products: Array<Product>;
 }
 
-export interface TableSignature {};
-
-export default class Table extends Component<TableSignature> {
+export default class Table extends Component<{}> {
   agGridElement?: HTMLElement;
   agGridInstance?: Grid;
 
@@ -171,6 +174,9 @@ export default class Table extends Component<TableSignature> {
           {
             field: 'buyNow',
             cellRenderer: BuyNowCell,
+            // Can't get this to work like in the React one!
+            // cellClass: "py-2",
+            // Had to bump this up in comparison to the React one!
             width: 150
           }
         ],
