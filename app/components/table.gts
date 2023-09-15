@@ -208,8 +208,5 @@ export default class Table extends Component<{}> {
         <this.emberTooltipRenderer.component @params={{this.emberTooltipRenderer.params}} />
       {{/in-element}}
     {{/if}}
-
-    ({{this.emberTooltipRenderer}})
-    
   </template>
 }
