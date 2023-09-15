@@ -2,31 +2,31 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 import Component from '@glimmer/component';
-
-import {
-  Grid,
-  GridApi
-} from 'ag-grid-enterprise';
-import { modifier } from 'ember-modifier';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 
+import {
+  Grid,
+} from 'ag-grid-enterprise';
+import { modifier } from 'ember-modifier';
 import productsFromJson from 'polaris-starter/products-data.json';
+import EmberCellRenderer from 'polaris-starter/utils/ember-cell-renderer';
+import EmberTooltipRenderer from 'polaris-starter/utils/ember-tooltip-renderer';
 
+import BuyNow from './buy-now'
+import Tooltip from './tooltip'
+
+import type { TooltipShowEvent } from "ag-grid-community";
 import type {
+  GridApi,
   GridOptions,
   IServerSideGetRowsParams,
-  TooltipShowEvent
 } from 'ag-grid-enterprise';
 
-import EmberCellRenderer from 'polaris-starter/utils/ember-cell-renderer';
-import BuyNow from './buy-now'
 class BuyButtonCellRenderer extends EmberCellRenderer<string> {
   component = BuyNow;
 }
 
-import EmberTooltipRenderer from 'polaris-starter/utils/ember-tooltip-renderer';
-import Tooltip from './tooltip'
 class TooltipRenderer extends EmberTooltipRenderer {
   component = Tooltip;
 }
@@ -152,7 +152,7 @@ export default class Table extends Component<{}> {
 
         // Custom ember tooltip rendering
         onTooltipShow: this.updateCustomTooltipRendering,
-        tooltipHide: () => { this.context.emberTooltipRenderer = undefined },
+        onTooltipHide: () => { this.context.activeTooltipRender = undefined },
         context: this.context,
       };
 
@@ -165,22 +165,25 @@ export default class Table extends Component<{}> {
   @action
   updateCustomCellRendering({ api }: { api: GridApi } ) {
     const cellRenderers = api.getCellRendererInstances();
+
     if (!cellRenderers) {
       return;
     }
 
     const emberCellRenderers: EmberCellRenderer[] = [];
+
     for (const renderer of cellRenderers) {
       if (renderer instanceof EmberCellRenderer) {
         emberCellRenderers.push(renderer);
       }
     }
+
     this.emberCellRenderers = emberCellRenderers;
   }
 
   @action
-  updateCustomTooltipRendering(e: TooltipShowEvent) {
-    if (e.tooltipGui.hasAttribute('data-ember-tooltip') ){
+  updateCustomTooltipRendering(e?: TooltipShowEvent) {
+    if (e?.tooltipGui.hasAttribute('data-ember-tooltip') ){
       this.emberTooltipRenderer = this.context.activeTooltipRender
     }
   }

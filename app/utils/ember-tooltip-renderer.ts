@@ -1,20 +1,16 @@
-import { guidFor } from "@ember/object/internals";
 import { tracked } from "@glimmer/tracking";
+import { guidFor } from "@ember/object/internals";
 
 import type Component from "@glimmer/component";
-import type {
-  ITooltipComp,
-  ITooltipParams,
-  TooltipShowEvent,
-} from "ag-grid-community";
+import type { ITooltipComp, ITooltipParams } from "ag-grid-community";
 
-abstract class EmberTooltipRenderer<T = any> implements ITooltipComp {
+abstract class EmberTooltipRenderer<T = unknown> implements ITooltipComp {
   private id = guidFor(this);
-  abstract component?: typeof Component | string;
+  abstract component: typeof Component<{ params: ITooltipParams<T> }>;
 
   target: HTMLDivElement;
 
-  @tracked params?: ITooltipParams<T>;
+  @tracked declare params: ITooltipParams<T>;
 
   constructor() {
     this.target = document.createElement("div");

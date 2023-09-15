@@ -1,7 +1,8 @@
 import Component from '@glimmer/component';
-import { action } from '@ember/object';
-import type { ICellRendererParams } from 'ag-grid-community';
 import { on } from '@ember/modifier';
+import { action } from '@ember/object';
+
+import type { ICellRendererParams } from 'ag-grid-community';
 
 interface Signature {
   Args: {
@@ -11,7 +12,7 @@ interface Signature {
 }
 
 
-export default class Table extends Component<Signature> {
+export default class BuyNow extends Component<Signature> {
   @action
   buy() {
     alert(
