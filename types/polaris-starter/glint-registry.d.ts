@@ -5,12 +5,14 @@ import type { HelperLike } from "@glint/template";
 // import type { ComponentLike, HelperLike, ModifierLike } from "@glint/template";
 import type Welcome from "polaris-starter/components/welcome";
 import type Table from "polaris-starter/components/table";
+import type BuyNow from "polaris-starter/components/buy-now";
 
 declare module "@glint/environment-ember-loose/registry" {
   export default interface Registry {
     // Examples
     // state: HelperLike<{ Args: {}, Return: State }>;
     // attachShadow: ModifierLike<{ Args: { Positional: [State['update']]}}>;
+    BuyNow: typeof BuyNow;
     Table: typeof Table;
     Welcome: typeof Welcome;
 
