@@ -2,120 +2,33 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
 
 import {
-  Grid
+  Grid,
 } from 'ag-grid-enterprise';
 import { modifier } from 'ember-modifier';
 import productsFromJson from 'polaris-starter/products-data.json';
+import EmberCellRenderer from 'polaris-starter/utils/ember-cell-renderer';
+import EmberTooltipRenderer from 'polaris-starter/utils/ember-tooltip-renderer';
 
+import BuyNow from './buy-now'
+import Tooltip from './tooltip'
+
+import type { TooltipShowEvent } from "ag-grid-community";
 import type {
+  GridApi,
   GridOptions,
-  ICellRendererComp,
-  ICellRendererParams,
   IServerSideGetRowsParams,
-  ITooltipComp,
-  ITooltipParams
 } from 'ag-grid-enterprise';
 
-/**
- * Renders a "Buy now" button in  the last column. This is mostly testing how easy it is to
- * add a custom cell renderer with AG Grid. Due to not having an Ember library for AG Grid,
- * these components must be built using JavaScript and handle their own event handlers.
- */
-class BuyNowCell implements ICellRendererComp {
-  eGui!: HTMLButtonElement;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  eValue: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cellValue: any;
-  eventListener!: () => void;
-
-  // gets called once before the renderer is used
-  init(params: ICellRendererParams) {
-    this.eGui = document.createElement('button');
-    this.eGui.setAttribute('type', 'button');
-    this.eGui.className = 'rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 flex items-center gap-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600';
-
-    this.eGui.innerHTML = `
-      <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          data-icon="SvgShoppingCart"
-          aria-hidden="true"
-          className="w-4 h-4"
-        >
-          <path
-            d="M20.112 19.4a1.629 1.629 0 11-1.629-1.629 1.63 1.63 0 011.629 1.629zM9.941 17.768a1.629 1.629 0 101.628 1.632 1.629 1.629 0 00-1.628-1.632zM3 3.006h1.678a2.113 2.113 0 011.965 1.573l2.051 9.152a2.114 2.114 0 001.965 1.574h6.788a2.153 2.153 0 001.989-1.568L20.957 8.8a1.233 1.233 0 00-1.236-1.588L11.4 7.064"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-          ></path>
-        </svg>
-        <span>Buy now</span>
-    `;
-
-    this.eventListener = () => alert(
-          `You selected "${
-            params.data?.title
-          }" to purchase for ${Intl.NumberFormat("us", {
-            style: "currency",
-            currency: "USD",
-          }).format(params.data?.price)}`
-        );
-    this.eGui.addEventListener('click', this.eventListener);
-  }
-
-  // Mandatory - Return the DOM element of the component, this is what the grid puts into the cell
-  getGui() {
-    return this.eGui;
-  }
-
-  // Optional - Gets called once by grid after rendering is finished - if your renderer needs to do any cleanup,
-  // do it here
-  destroy() {
-    if (this.eGui) {
-      this.eGui.removeEventListener('click', this.eventListener);
-    }
-  }
-
-  // Mandatory - Get the cell to refresh. Return true if the refresh succeeded, otherwise return false.
-  // If you return false, the grid will remove the component from the DOM and create
-  // a new component in its place with the new values.
-  refresh(params: ICellRendererParams) {
-    // set value into cell again
-    this.cellValue = this.getValueToDisplay(params);
-    this.eValue.innerHTML = this.cellValue;
-
-    // return true to tell the grid we refreshed successfully
-    return true;
-  }
-
-  getValueToDisplay(params: ICellRendererParams) {
-    return params.valueFormatted ? params.valueFormatted : params.value;
-  }
+class BuyButtonCellRenderer extends EmberCellRenderer<string> {
+  component = BuyNow;
 }
 
-/**
- * Renders a custom tooltip for the Description column. I wanted to see how easy it was
- * to render custom tooltip components.
- */
-class DescriptionTooltip implements ITooltipComp {
-  eGui!: HTMLDivElement;
-
-  init(params: ITooltipParams) {
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'bg-slate-600 text-white rounded-md p-2';
-    this.eGui.innerHTML = `${params.data?.description}`;
-  }
-
-  getGui() {
-    return this.eGui;
-  }
+class TooltipRenderer extends EmberTooltipRenderer {
+  component = Tooltip;
 }
 
 /**
@@ -156,6 +69,23 @@ export default class Table extends Component<{}> {
   agGridElement?: HTMLElement;
   agGridInstance?: Grid;
 
+  // Instances of "ember cell" to render (visible in viewport or in buffer)
+  @tracked emberCellRenderers: EmberCellRenderer[] = [];
+
+  // There's no easy way to get TooltipRenderer instance when a custom tooltip is shown (like we do through `getCellRendererInstances` for custom cells)
+  // This is a workarround allowing a custom tooltip to "register itself" before there are actually rendered.
+  // It allows table component to properly render ember component as tooltip
+  //
+  // This workarround (+ usage of "data-ember-tooltip" attribute) could get away if :
+  // - `onTooltipShow` event could include the TooltipComponent instance
+  // or
+  // - a kind of "getTooltipRendererInstance" method is added to Grid API
+  readonly context = {
+    activeTooltipRender: undefined,
+  };
+  // Current"ember tooltip" to render
+  @tracked emberTooltipRenderer: EmberTooltipRenderer | undefined;
+
   MountModifier = modifier<{ Element: HTMLElement }>(
     (element) => {
       const gridOptions: GridOptions = {
@@ -166,7 +96,7 @@ export default class Table extends Component<{}> {
             field: "description",
             resizable: true,
             tooltipField: 'description',
-            tooltipComponent: DescriptionTooltip
+            tooltipComponent: TooltipRenderer
           },
           { field: "price", sortable: true },
           { field: "discountPercentage" },
@@ -178,11 +108,8 @@ export default class Table extends Component<{}> {
           { field: "images", resizable: true },
           {
             field: 'buyNow',
-            cellRenderer: BuyNowCell,
-            // Can't get this to work like in the React one!
-            // cellClass: "py-2",
-            // Had to bump this up in comparison to the React one!
-            width: 150
+            cellRenderer: BuyButtonCellRenderer,
+            cellClass: "py-2"
           }
         ],
         rowModelType: 'serverSide',
@@ -216,7 +143,17 @@ export default class Table extends Component<{}> {
 
             params.success({ rowData: sorted });
           }
-        }
+        },
+
+        // All events bellow are need to get ember cells rendered correctly
+        onViewportChanged: this.updateCustomCellRendering,
+        onFirstDataRendered: this.updateCustomCellRendering,
+        onVirtualColumnsChanged: this.updateCustomCellRendering,
+
+        // Custom ember tooltip rendering
+        onTooltipShow: this.updateCustomTooltipRendering,
+        onTooltipHide: () => { this.context.activeTooltipRender = undefined },
+        context: this.context,
       };
 
       this.agGridInstance = new Grid(element, gridOptions);
@@ -225,9 +162,49 @@ export default class Table extends Component<{}> {
     }
   );
 
+  @action
+  updateCustomCellRendering({ api }: { api: GridApi } ) {
+    const cellRenderers = api.getCellRendererInstances();
+
+    if (!cellRenderers) {
+      return;
+    }
+
+    const emberCellRenderers: EmberCellRenderer[] = [];
+
+    for (const renderer of cellRenderers) {
+      if (renderer instanceof EmberCellRenderer) {
+        emberCellRenderers.push(renderer);
+      }
+    }
+
+    this.emberCellRenderers = emberCellRenderers;
+  }
+
+  @action
+  updateCustomTooltipRendering(e?: TooltipShowEvent) {
+    if (e?.tooltipGui.hasAttribute('data-ember-tooltip') ){
+      this.emberTooltipRenderer = this.context.activeTooltipRender
+    }
+  }
+
   <template>
     <div class="h-96 w-full max-w-7xl mx-auto p-4">
       <div {{this.MountModifier}} class="ag-theme-alpine h-full w-full" />
     </div>
+
+    {{!-- Render ember component from custom cell renderers --}}
+    {{#each this.emberCellRenderers as |renderer|}}
+      {{#in-element renderer.target}}
+        <renderer.component @params={{renderer.params}} />
+      {{/in-element}}
+    {{/each}}
+
+    {{!-- Render ember component from custom tooltip renderer --}}
+    {{#if this.emberTooltipRenderer}}
+      {{#in-element this.emberTooltipRenderer.target}}
+        <this.emberTooltipRenderer.component @params={{this.emberTooltipRenderer.params}} />
+      {{/in-element}}
+    {{/if}}
   </template>
 }
