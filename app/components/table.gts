@@ -5,8 +5,10 @@ import {
   ICellRendererParams,
   IServerSideGetRowsParams,
   ITooltipComp,
-  ITooltipParams
+  ITooltipParams,
+  TooltipShowEvent
 } from 'ag-grid-enterprise';
+
 import { modifier } from 'ember-modifier';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
@@ -17,35 +19,22 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 import productsFromJson from 'polaris-starter/products-data.json';
 
-import EmberCellRenderer from 'polaris-starter/utils/ember-cell-renderer';
-import BuyNow from './buy-now'
-
 import {
   GridApi
 } from 'ag-grid-enterprise';
 
-class BuyButtonCellRenderer extends EmberCellRenderer<string> {
+import EmberCellRenderer from 'polaris-starter/utils/ember-cell-renderer';
+import BuyNow from './buy-now'
+class BuyButtonCellRenderer extends EmberCellRenderer {
   component = BuyNow;
 }
 
-
-/**
- * Renders a custom tooltip for the Description column. I wanted to see how easy it was
- * to render custom tooltip components.
- */
-class DescriptionTooltip implements ITooltipComp {
-  eGui!: HTMLDivElement;
-
-  init(params: ITooltipParams) {
-    this.eGui = document.createElement('div');
-    this.eGui.className = 'bg-slate-600 text-white rounded-md p-2';
-    this.eGui.innerHTML = `${params.data?.description}`;
-  }
-
-  getGui() {
-    return this.eGui;
-  }
+import EmberTooltipRenderer from 'polaris-starter/utils/ember-tooltip-renderer';
+import Tooltip from './tooltip'
+class TooltipRenderer extends EmberTooltipRenderer {
+  component = Tooltip;
 }
+
 
 /**
  * Custom sort function.  Normally the backend would do this for us,
@@ -88,6 +77,20 @@ export default class Table extends Component<{}> {
   // Instances of "ember cell" to render (visible in viewport or in buffer)
   @tracked emberCellRenderers: EmberCellRenderer[] = [];
 
+  // There's no easy way to get TooltipRenderer instance when a custom tooltip is shown (like we do through `getCellRendererInstances` for custom cells)
+  // This is a workarround allowing a custom tooltip to "register itself" before there are actually rendered.
+  // It allows table component to properly render ember component as tooltip
+  //
+  // This workarround (+ usage of "data-ember-tooltip" attribute) could get away if :
+  // - `onTooltipShow` event could include the TooltipComponent instance
+  // or
+  // - a kind of "getTooltipRendererInstance" method is added to Grid API
+  readonly context = {
+    activeTooltipRender: undefined,
+  };
+  // Current"ember tooltip" to render
+  @tracked emberTooltipRenderer: EmberTooltipRenderer | undefined;
+
   MountModifier = modifier<{ Element: HTMLElement }>(
     (element) => {
       const gridOptions: GridOptions = {
@@ -98,9 +101,7 @@ export default class Table extends Component<{}> {
             field: "description",
             resizable: true,
             tooltipField: 'description',
-            // There's not "easy" way to retrieve Tooltip instances to render custom tooltip the same way we do with cell.
-            // Could we use custom cell & implement our own tooltip ?
-            tooltipComponent: DescriptionTooltip
+            tooltipComponent: TooltipRenderer
           },
           { field: "price", sortable: true },
           { field: "discountPercentage" },
@@ -153,6 +154,11 @@ export default class Table extends Component<{}> {
         onViewportChanged: this.updateCustomCellRendering,
         onFirstDataRendered: this.updateCustomCellRendering,
         onVirtualColumnsChanged: this.updateCustomCellRendering,
+
+        // Custom ember tooltip rendering
+        onTooltipShow: this.updateCustomTooltipRendering,
+        tooltipHide: () => { this.context.emberTooltipRenderer = undefined },
+        context: this.context,
       };
 
       this.agGridInstance = new Grid(element, gridOptions);
@@ -177,16 +183,33 @@ export default class Table extends Component<{}> {
     this.emberCellRenderers = emberCellRenderers;
   }
 
+  @action
+  updateCustomTooltipRendering(e: TooltipShowEvent) {
+    if (e.tooltipGui.hasAttribute('data-ember-tooltip') ){
+      this.emberTooltipRenderer = this.context.activeTooltipRender
+    }
+  }
+
   <template>
     <div class="h-96 w-full max-w-7xl mx-auto p-4">
       <div {{this.MountModifier}} class="ag-theme-alpine h-full w-full" />
     </div>
 
-    {{!-- Render ember component from custom cell renderer --}}
+    {{!-- Render ember component from custom cell renderers --}}
     {{#each this.emberCellRenderers as |renderer|}}
       {{#in-element renderer.target}}
         <renderer.component @params={{renderer.params}} />
       {{/in-element}}
     {{/each}}
+
+    {{!-- Render ember component from custom tooltip renderer --}}
+    {{#if this.emberTooltipRenderer}}
+      {{#in-element this.emberTooltipRenderer.target}}
+        <this.emberTooltipRenderer.component @params={{this.emberTooltipRenderer.params}} />
+      {{/in-element}}
+    {{/if}}
+
+    ({{this.emberTooltipRenderer}})
+    
   </template>
 }
