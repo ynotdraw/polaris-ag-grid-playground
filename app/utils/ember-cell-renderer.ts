@@ -1,8 +1,8 @@
-import { guidFor } from '@ember/object/internals';
-import { tracked } from '@glimmer/tracking';
+import { guidFor } from "@ember/object/internals";
+import { tracked } from "@glimmer/tracking";
 
-import type Component from '@glimmer/component';
-import type { ICellRendererComp, ICellRendererParams } from 'ag-grid-community';
+import type Component from "@glimmer/component";
+import type { ICellRendererComp, ICellRendererParams } from "ag-grid-community";
 
 abstract class EmberCellRenderer<T = any> implements ICellRendererComp {
   private id = guidFor(this);
@@ -13,8 +13,8 @@ abstract class EmberCellRenderer<T = any> implements ICellRendererComp {
   @tracked params?: ICellRendererParams<T>;
 
   constructor() {
-    this.target = document.createElement('div');
-    this.target.setAttribute('id', this.id);
+    this.target = document.createElement("div");
+    this.target.setAttribute("id", this.id);
   }
 
   // gets called once before the renderer is used
